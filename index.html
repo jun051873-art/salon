@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>沙龍排班 - 完整版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --rest-color: #E2A6A6; /* 莫蘭迪霧粉 */
+            --off-color: #A2B9BC;  /* 莫蘭迪灰藍 */
+            --text-dark: #4A4E51;
+        }
+        
+        body {
+            font-family: -apple-system, "SF Pro Display", sans-serif;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            background: linear-gradient(135deg, #E0E5EC 0%, #B8C6DB 100%);
+            min-height: 100vh;
+            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+        }
+
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; }
+        select {
+            background: var(--glass-bg); backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); padding: 8px 15px;
+            border-radius: 12px; font-size: 15px; color: var(--text-dark);
+        }
+
+        #capture-area {
+            background: var(--glass-bg); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px 20px; border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            width: 100%; max-width: 370px; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        }
+
+        .title-month { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 6px; }
+        th { font-size: 12px; color: #888; padding-bottom: 10px; }
+        
+        td {
+            background: rgba(255, 255, 255, 0.3); height: 65px;
+            border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease; position: relative; cursor: pointer;
+            -webkit-tap-highlight-color: transparent; touch-action: none;
+        }
+
+        /* 點擊縮放特效 */
+        td:active { transform: scale(0.9); }
+
+        .date-num { font-size: 17px; font-weight: 600; }
+        .note-text { font-size: 10px; margin-top: 3px; height: 14px; color: #666; font-weight: 500; }
+
+        .is-rest { background: var(--rest-color) !important; color: white !important; border: none; }
+        .is-off { background: var(--off-color) !important; color: white !important; border: none; }
+        .is-rest .note-text, .is-off .note-text { color: white !important; }
+
+        .shop-name { margin-top: 30px; font-size: 20px; font-weight: 700; color: #5D6D7E; letter-spacing: 4px; }
+        .btn-download {
+            margin-top: 25px; padding: 15px; border: none; border-radius: 20px;
+            width: 100%; max-width: 370px; background: #333; color: white;
+            font-size: 16px; font-weight: 600; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <select id="yearSel" onchange="render()"></select>
+        <select id="monthSel" onchange="render()"></select>
+    </div>
+
+    <div id="capture-area">
+        <div style="color:#999; font-size:10px; margin-bottom:3px;">2026 SCHEDULE</div>
+        <div class="title-month" id="monthLabel">2月 排休表</div>
+        <table>
+            <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
+            <tbody id="calendar-body"></tbody>
+        </table>
+        <div class="shop-name">專屬空間沙龍</div>
+    </div>
+
+    <button class="btn-download" onclick="exportImage()">📸 儲存為精美圖檔</button>
+
+    <script>
+        const yearSel = document.getElementById('yearSel');
+        const monthSel = document.getElementById('monthSel');
+        
+        // 初始化選擇器
+        for(let i=2025; i<=2027; i++) yearSel.add(new Option(i+' 年', i));
+        for(let i=1; i<=12; i++) monthSel.add(new Option(i+' 月', i-1));
+        yearSel.value = 2026; monthSel.value = 1; // 預設 2026年2月
+
+        function render() {
+            const body = document.getElementById('calendar-body');
+            const year = parseInt(yearSel.value);
+            const month = parseInt(monthSel.value);
+            document.getElementById('monthLabel').innerText = (month + 1) + "月 排休表";
+            body.innerHTML = '';
+            
+            let firstDay = new Date(year, month, 1).getDay();
+            let startIdx = (firstDay === 0) ? 6 : firstDay - 1;
+            let days = new Date(year, month + 1, 0).getDate();
+            
+            let date = 1;
+            for (let i = 0; i < 6; i++) {
+                let row = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    let cell = document.createElement('td');
+                    if (i === 0 && j < startIdx || date > days) {
+                        cell.style.background = 'transparent'; cell.style.border = 'none';
+                    } else {
+                        cell.innerHTML = `<div class="date-num">${date}</div><div class="note-text" id="n-${date}"></div>`;
+                        let curD = date;
+                        let timer = null;
+
+                        // 長按與點擊邏輯
+                        cell.addEventListener('pointerdown', () => {
+                            timer = setTimeout(() => {
+                                const note = document.getElementById('n-'+curD);
+                                const val = prompt("輸入自訂備註：", note.innerText);
+                                if (val !== null) note.innerText = val;
+                                timer = null;
+                            }, 600); // 長按 0.6 秒觸發
+                        });
+
+                        cell.addEventListener('pointerup', () => {
+                            if (timer) {
+                                clearTimeout(timer);
+                                // 切換狀態：店休 -> 排休 -> 無
+                                if (!cell.classList.contains('is-rest') && !cell.classList.contains('is-off')) {
+                                    cell.classList.add('is-rest');
+                                    document.getElementById('n-'+curD).innerText = '店休';
+                                } else if (cell.classList.contains('is-rest')) {
+                                    cell.classList.replace('is-rest', 'is-off');
+                                    document.getElementById('n-'+curD).innerText = '排休';
+                                } else {
+                                    cell.classList.remove('is-off');
+                                    document.getElementById('n-'+curD).innerText = '';
+                                }
+                                timer = null;
+                            }
+                        });
+                        date++;
+                    }
+                    row.appendChild(cell);
+                }
+                body.appendChild(row);
+                if (date > days) break;
+            }
+        }
+
+        function exportImage() {
+            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: null }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `沙龍排班表.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+        render();
+    </script>
+</body>
+</html>
