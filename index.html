@@ -5,87 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>專屬空間沙龍 - 排休 1 號終極版</title>
+    <title>專屬空間沙龍 - 排休 1 號</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --bg-dark: #1a1a1a;
-            --gold-border: linear-gradient(145deg, #d4af37, #f1c40f, #996515);
-            --glass-bg: rgba(255, 255, 255, 0.08);
+            --bg-main: #B8C6DB; /* 您最愛的藍灰底 */
+            --glass-white: rgba(255, 255, 255, 0.7);
+            --gold-line: #d4af37; /* 細細的香檳金邊 */
             --rest-pink: #E2A6A6;
             --off-blue: #A2B9BC;
+            --text-dark: #4A4E51;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #0f0f0f; margin: 0; padding: 20px;
+            font-family: -apple-system, sans-serif;
+            background: var(--bg-main); margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; color: #fff; -webkit-touch-callout: none; user-select: none;
+            min-height: 100vh; color: var(--text-dark);
+            -webkit-touch-callout: none; user-select: none;
         }
 
-        /* 賈伯斯風格 - 極細金屬邊框選單 */
-        .controls { margin-bottom: 25px; display: flex; gap: 10px; }
+        /* 選擇器樣式 */
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; }
         select {
-            background: rgba(255,255,255,0.1); border: 0.5px solid #d4af37;
-            border-radius: 12px; padding: 10px 15px; color: #d4af37; font-size: 14px; outline: none;
+            background: var(--glass-white); border: 0.5px solid var(--gold-line);
+            border-radius: 12px; padding: 8px 15px; color: var(--text-dark); outline: none;
         }
 
-        /* 核心卡片：金絲拉絲邊框與毛玻璃 */
+        /* 主卡片：藍灰底 + 超細金邊 */
         #capture-area {
-            position: relative;
-            background: #111;
+            background: var(--glass-white); backdrop-filter: blur(20px);
             padding: 40px 25px; border-radius: 40px;
             width: 100%; max-width: 380px; text-align: center;
             box-sizing: border-box;
-            overflow: hidden;
-            border: 1px solid transparent;
-            background-image: linear-gradient(#111, #111), var(--gold-border);
-            background-origin: border-box;
-            background-clip: content-box, border-box; /* 達成極細金邊 */
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            border: 0.8px solid var(--gold-line); /* 賈伯斯式細邊 */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
         }
 
         /* 專屬空間 - 光影流動特效 */
         .shop-name {
-            margin-top: 40px; padding-top: 25px;
+            margin-top: 35px; padding-top: 25px;
             font-size: 24px; font-weight: 700;
-            background: linear-gradient(to right, #444 20%, #fff 40%, #fff 60%, #444 80%);
+            background: linear-gradient(to right, #666 20%, #fff 40%, #fff 60%, #666 80%);
             background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: shine 4s linear infinite;
-            letter-spacing: 8px; border-top: 0.5px solid rgba(212, 175, 55, 0.2);
+            letter-spacing: 6px; border-top: 0.5px solid rgba(0,0,0,0.05);
         }
 
-        @keyframes shine {
-            to { background-position: 200% center; }
-        }
+        @keyframes shine { to { background-position: 200% center; } }
 
-        .title-month { font-size: 26px; font-weight: 300; margin-bottom: 25px; color: #eee; letter-spacing: 2px; }
+        .title-month { font-size: 26px; font-weight: 700; margin-bottom: 20px; }
         table { width: 100%; border-collapse: separate; border-spacing: 8px; }
-        th { font-size: 12px; color: #666; padding-bottom: 12px; font-weight: 400; }
+        th { font-size: 12px; color: #8E9799; padding-bottom: 10px; }
         
         td {
-            background: rgba(255, 255, 255, 0.05); height: 65px;
-            border-radius: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer; position: relative; touch-action: none;
-            border: 0.5px solid rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.4); height: 70px;
+            border-radius: 20px; border: 0.5px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease; cursor: pointer; position: relative; touch-action: none;
+        }
+        td:active { transform: scale(0.92); }
+
+        .date-num { font-size: 18px; font-weight: 600; }
+        
+        /* 備註文字：絕對定位在中心，不影響佈局 */
+        .note-text {
+            font-size: 11px; font-weight: 700;
+            position: absolute; bottom: 12px; left: 0; right: 0;
+            height: 14px; pointer-events: none;
         }
 
-        td:active { transform: scale(0.85); background: rgba(255, 255, 255, 0.15); }
-
-        .date-num { font-size: 18px; font-weight: 500; }
-        .note-text { font-size: 10px; margin-top: 4px; height: 14px; color: #999; }
-
-        .is-rest { background: var(--rest-pink) !important; color: white !important; }
-        .is-off { background: var(--off-blue) !important; color: white !important; }
-        .is-rest .note-text, .is-off .note-text { color: white !important; }
+        .is-rest { background: var(--rest-pink) !important; color: white !important; border: none; }
+        .is-off { background: var(--off-blue) !important; color: white !important; border: none; }
 
         .btn-export {
-            margin-top: 30px; padding: 18px; border-radius: 30px;
-            width: 100%; max-width: 380px; background: transparent;
-            color: #d4af37; font-size: 15px; font-weight: 500;
-            border: 1px solid #d4af37; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            margin-top: 25px; padding: 15px; border-radius: 25px;
+            width: 100%; max-width: 380px; background: #333;
+            color: white; font-size: 16px; font-weight: 600; border: none;
         }
     </style>
 </head>
@@ -97,7 +93,7 @@
     </div>
 
     <div id="capture-area">
-        <div style="color: #666; font-size: 10px; letter-spacing: 3px; margin-bottom: 10px;">PREMIUM SCHEDULE</div>
+        <div style="color: #8E9799; font-size: 10px; letter-spacing: 2px; margin-bottom: 5px;">2026 SCHEDULE</div>
         <div class="title-month" id="mLabel">2月 排休表</div>
         <table>
             <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
@@ -115,11 +111,6 @@
         for(let i=2025; i<=2027; i++) yS.add(new Option(i+' 年', i));
         for(let i=1; i<=12; i++) mS.add(new Option(i+' 月', i-1));
         yS.value = 2026; mS.value = 1;
-
-        function saveMemory(key, data) {
-            memory[key] = data;
-            localStorage.setItem('salon_1_memory', JSON.stringify(memory));
-        }
 
         function render() {
             const body = document.getElementById('calBody'), y = parseInt(yS.value), m = parseInt(mS.value);
@@ -145,7 +136,7 @@
                         let timer = null;
                         cell.onpointerdown = () => {
                             timer = setTimeout(() => {
-                                let v = prompt("編輯備註：", document.getElementById('n-'+dateId).innerText);
+                                let v = prompt("輸入自訂文字（會覆蓋在顏色上）：", document.getElementById('n-'+dateId).innerText);
                                 if(v!==null) {
                                     document.getElementById('n-'+dateId).innerText = v;
                                     updateDay(currentKey, dateId, cell.className, v);
@@ -157,14 +148,15 @@
                         cell.onpointerup = () => {
                             if(timer) {
                                 clearTimeout(timer);
-                                if(!cell.classList.contains('is-rest') && !cell.classList.contains('is-off')) {
-                                    cell.classList.add('is-rest'); document.getElementById('n-'+dateId).innerText='店休';
+                                const noteObj = document.getElementById('n-'+dateId);
+                                if (!cell.classList.contains('is-rest') && !cell.classList.contains('is-off')) {
+                                    cell.classList.add('is-rest'); noteObj.innerText = noteObj.innerText || '店休';
                                 } else if(cell.classList.contains('is-rest')) {
-                                    cell.classList.replace('is-rest', 'is-off'); document.getElementById('n-'+dateId).innerText='排休';
+                                    cell.classList.replace('is-rest', 'is-off'); noteObj.innerText = noteObj.innerText === '店休' ? '排休' : noteObj.innerText;
                                 } else {
-                                    cell.classList.remove('is-off'); document.getElementById('n-'+dateId).innerText='';
+                                    cell.classList.remove('is-off'); noteObj.innerText = noteObj.innerText === '排休' ? '' : noteObj.innerText;
                                 }
-                                updateDay(currentKey, dateId, cell.className, document.getElementById('n-'+dateId).innerText);
+                                updateDay(currentKey, dateId, cell.className, noteObj.innerText);
                                 timer = null;
                             }
                         };
@@ -184,9 +176,8 @@
         }
 
         function exportImg() {
-            const area = document.getElementById('capture-area');
-            html2canvas(area, { scale: 3, backgroundColor: '#0f0f0f', borderRadius: 40 }).then(c => {
-                let l = document.createElement('a'); l.download = `排休1號終極版.png`;
+            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: '#B8C6DB', borderRadius: 40 }).then(c => {
+                let l = document.createElement('a'); l.download = `排休1號.png`;
                 l.href = c.toDataURL(); l.click();
             });
         }
