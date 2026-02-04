@@ -9,78 +9,82 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
+            /* 調整為更清透的藍灰色調 */
             --bg-main: #B8C6DB; 
-            --glass-white: rgba(255, 255, 255, 0.4);
+            --glass-core: rgba(255, 255, 255, 0.25); /* 更薄的玻璃 */
+            --glass-border: rgba(255, 255, 255, 0.4);
             --gold-line: #d4af37; 
-            --rest-pink: #E2A6A6;
-            --off-blue: #A2B9BC;
-            --text-dark: #333;
+            --rest-pink: rgba(226, 166, 166, 0.85); /* 半透明莫蘭迪粉 */
+            --off-blue: rgba(162, 185, 188, 0.85);  /* 半透明莫蘭迪藍 */
         }
 
         body {
             font-family: -apple-system, sans-serif;
-            background: var(--bg-main); margin: 0; padding: 10px;
+            /* 模擬背景的高級感 */
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; color: var(--text-dark);
+            min-height: 100vh; color: #333;
             -webkit-touch-callout: none; user-select: none;
+            overflow: hidden; /* 防止滾動造成底部留白 */
         }
 
-        .controls { margin-bottom: 15px; display: flex; gap: 8px; }
+        .controls { margin-top: 20px; margin-bottom: 15px; display: flex; gap: 8px; }
         select {
-            background: rgba(255,255,255,0.6); border: 0.5px solid var(--gold-line);
-            border-radius: 10px; padding: 6px 12px; color: var(--text-dark); font-size: 14px;
+            background: rgba(255, 255, 255, 0.5); border: 0.5px solid var(--gold-line);
+            border-radius: 12px; padding: 6px 12px; font-size: 14px;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
 
-        /* iOS 26 深度毛玻璃容器 - 縮小比例 */
+        /* 核心玻璃容器：改善留白並強化透明感 */
         #capture-area {
-            background: var(--glass-white); 
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            padding: 30px 15px; border-radius: 35px;
-            width: 95vw; max-width: 350px; text-align: center;
+            background: var(--glass-core); 
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            padding: 25px 15px; border-radius: 40px;
+            width: 92vw; max-width: 350px; text-align: center;
             box-sizing: border-box;
-            border: 0.5px solid rgba(255,255,255,0.3);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 10px; /* 縮減底部間距 */
         }
 
         .shop-name {
-            margin-top: 25px; padding-top: 20px;
-            font-size: 20px; font-weight: 700;
-            background: linear-gradient(to right, #555 20%, #fff 40%, #fff 60%, #555 80%);
+            margin-top: 20px; padding-top: 15px;
+            font-size: 22px; font-weight: 700;
+            background: linear-gradient(to right, #666 20%, #fff 40%, #fff 60%, #666 80%);
             background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: shine 4s linear infinite;
-            letter-spacing: 5px; border-top: 0.5px solid rgba(255,255,255,0.2);
+            animation: shine 5s linear infinite;
+            letter-spacing: 6px; border-top: 0.5px solid rgba(255,255,255,0.3);
         }
 
         @keyframes shine { to { background-position: 200% center; } }
 
-        .title-month { font-size: 22px; font-weight: 700; margin-bottom: 15px; color: #444; }
-        table { width: 100%; border-collapse: separate; border-spacing: 5px; }
-        th { font-size: 11px; color: #666; padding-bottom: 8px; }
+        .title-month { font-size: 24px; font-weight: 700; margin-bottom: 15px; color: #444; }
+        table { width: 100%; border-collapse: separate; border-spacing: 6px; }
+        th { font-size: 12px; color: #555; padding-bottom: 10px; }
         
-        /* 膠囊形狀日期格子 */
+        /* 透亮膠囊日期格子 */
         td {
-            background: rgba(255, 255, 255, 0.3); height: 55px;
-            border-radius: 30px; /* 膠囊形狀的核心 */
-            border: 0.5px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.2s ease; cursor: pointer; position: relative; touch-action: none;
+            background: rgba(255, 255, 255, 0.2); 
+            height: 58px;
+            border-radius: 29px; /* 完美半圓膠囊 */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease; cursor: pointer; position: relative;
         }
-        td:active { transform: scale(0.88); }
+        td:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.4); }
 
-        .date-num { font-size: 16px; font-weight: 600; margin-top: -5px; }
-        .note-text {
-            font-size: 9px; font-weight: 700;
-            position: absolute; bottom: 8px; left: 0; right: 0;
-            height: 12px; pointer-events: none;
-        }
+        .date-num { font-size: 18px; font-weight: 600; margin-top: -2px; }
+        .note-text { font-size: 10px; font-weight: 700; position: absolute; bottom: 8px; left: 0; right: 0; }
 
         .is-rest { background: var(--rest-pink) !important; color: white !important; border: none; }
         .is-off { background: var(--off-blue) !important; color: white !important; border: none; }
 
         .btn-export {
-            margin-top: 20px; padding: 12px; border-radius: 20px;
-            width: 95vw; max-width: 350px; background: #333;
-            color: white; font-size: 14px; font-weight: 600; border: none;
+            margin-bottom: 20px; padding: 14px; border-radius: 25px;
+            width: 92vw; max-width: 350px; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            color: white; font-size: 15px; font-weight: 600; border: 0.5px solid var(--gold-line);
         }
     </style>
 </head>
@@ -92,7 +96,7 @@
     </div>
 
     <div id="capture-area">
-        <div style="color: #666; font-size: 9px; letter-spacing: 2px; margin-bottom: 5px;">2026 PREMIUM</div>
+        <div style="color: #444; font-size: 10px; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.6;">PREMIUM SCHEDULE</div>
         <div class="title-month" id="mLabel">2月 排休表</div>
         <table>
             <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
@@ -101,7 +105,7 @@
         <div class="shop-name">專屬空間沙龍</div>
     </div>
 
-    <button class="btn-export" onclick="exportImg()">📸 儲存為精美圖檔</button>
+    <button class="btn-export" onclick="exportImg()">📸 儲存精美圖檔</button>
 
     <script>
         const yS = document.getElementById('ySelect'), mS = document.getElementById('mSelect');
@@ -132,32 +136,24 @@
                         if(saved.class) cell.className = saved.class;
 
                         let timer = null;
-                        cell.onpointerdown = () => {
-                            timer = setTimeout(() => {
-                                let v = prompt("編輯文字：", document.getElementById('n-'+dateId).innerText);
-                                if(v!==null) {
-                                    document.getElementById('n-'+dateId).innerText = v;
-                                    updateDay(currentKey, dateId, cell.className, v);
-                                }
-                                timer = null;
-                            }, 600);
-                        };
+                        cell.onpointerdown = () => { timer = setTimeout(() => {
+                            let v = prompt("編輯文字：", document.getElementById('n-'+dateId).innerText);
+                            if(v!==null) { document.getElementById('n-'+dateId).innerText = v; updateDay(currentKey, dateId, cell.className, v); }
+                            timer = null;
+                        }, 600); };
 
-                        cell.onpointerup = () => {
-                            if(timer) {
-                                clearTimeout(timer);
-                                const noteObj = document.getElementById('n-'+dateId);
-                                if (!cell.classList.contains('is-rest') && !cell.classList.contains('is-off')) {
-                                    cell.classList.add('is-rest'); noteObj.innerText = noteObj.innerText || '店休';
-                                } else if(cell.classList.contains('is-rest')) {
-                                    cell.classList.replace('is-rest', 'is-off'); noteObj.innerText = noteObj.innerText === '店休' ? '排休' : noteObj.innerText;
-                                } else {
-                                    cell.classList.remove('is-off'); noteObj.innerText = noteObj.innerText === '排休' ? '' : noteObj.innerText;
-                                }
-                                updateDay(currentKey, dateId, cell.className, noteObj.innerText);
-                                timer = null;
+                        cell.onpointerup = () => { if(timer) { clearTimeout(timer);
+                            const noteObj = document.getElementById('n-'+dateId);
+                            if (!cell.classList.contains('is-rest') && !cell.classList.contains('is-off')) {
+                                cell.classList.add('is-rest'); noteObj.innerText = noteObj.innerText || '店休';
+                            } else if(cell.classList.contains('is-rest')) {
+                                cell.classList.replace('is-rest', 'is-off'); noteObj.innerText = noteObj.innerText === '店休' ? '排休' : noteObj.innerText;
+                            } else {
+                                cell.classList.remove('is-off'); noteObj.innerText = noteObj.innerText === '排休' ? '' : noteObj.innerText;
                             }
-                        };
+                            updateDay(currentKey, dateId, cell.className, noteObj.innerText);
+                            timer = null;
+                        } };
                         d++;
                     }
                     row.appendChild(cell);
@@ -174,7 +170,7 @@
         }
 
         function exportImg() {
-            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: '#B8C6DB', borderRadius: 35 }).then(c => {
+            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: null, borderRadius: 40 }).then(c => {
                 let l = document.createElement('a'); l.download = `排休1號.png`;
                 l.href = c.toDataURL(); l.click();
             });
