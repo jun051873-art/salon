@@ -9,79 +9,78 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --bg-main: #B8C6DB; /* 您最愛的藍灰底 */
-            --glass-white: rgba(255, 255, 255, 0.7);
-            --gold-line: #d4af37; /* 細細的香檳金邊 */
+            --bg-main: #B8C6DB; 
+            --glass-white: rgba(255, 255, 255, 0.4);
+            --gold-line: #d4af37; 
             --rest-pink: #E2A6A6;
             --off-blue: #A2B9BC;
-            --text-dark: #4A4E51;
+            --text-dark: #333;
         }
 
         body {
             font-family: -apple-system, sans-serif;
-            background: var(--bg-main); margin: 0; padding: 20px;
+            background: var(--bg-main); margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; color: var(--text-dark);
             -webkit-touch-callout: none; user-select: none;
         }
 
-        /* 選擇器樣式 */
-        .controls { margin-bottom: 20px; display: flex; gap: 10px; }
+        .controls { margin-bottom: 15px; display: flex; gap: 8px; }
         select {
-            background: var(--glass-white); border: 0.5px solid var(--gold-line);
-            border-radius: 12px; padding: 8px 15px; color: var(--text-dark); outline: none;
+            background: rgba(255,255,255,0.6); border: 0.5px solid var(--gold-line);
+            border-radius: 10px; padding: 6px 12px; color: var(--text-dark); font-size: 14px;
         }
 
-        /* 主卡片：藍灰底 + 超細金邊 */
+        /* iOS 26 深度毛玻璃容器 - 縮小比例 */
         #capture-area {
-            background: var(--glass-white); backdrop-filter: blur(20px);
-            padding: 40px 25px; border-radius: 40px;
-            width: 100%; max-width: 380px; text-align: center;
+            background: var(--glass-white); 
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            padding: 30px 15px; border-radius: 35px;
+            width: 95vw; max-width: 350px; text-align: center;
             box-sizing: border-box;
-            border: 0.8px solid var(--gold-line); /* 賈伯斯式細邊 */
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            border: 0.5px solid rgba(255,255,255,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
-        /* 專屬空間 - 光影流動特效 */
         .shop-name {
-            margin-top: 35px; padding-top: 25px;
-            font-size: 24px; font-weight: 700;
-            background: linear-gradient(to right, #666 20%, #fff 40%, #fff 60%, #666 80%);
+            margin-top: 25px; padding-top: 20px;
+            font-size: 20px; font-weight: 700;
+            background: linear-gradient(to right, #555 20%, #fff 40%, #fff 60%, #555 80%);
             background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: shine 4s linear infinite;
-            letter-spacing: 6px; border-top: 0.5px solid rgba(0,0,0,0.05);
+            letter-spacing: 5px; border-top: 0.5px solid rgba(255,255,255,0.2);
         }
 
         @keyframes shine { to { background-position: 200% center; } }
 
-        .title-month { font-size: 26px; font-weight: 700; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 8px; }
-        th { font-size: 12px; color: #8E9799; padding-bottom: 10px; }
+        .title-month { font-size: 22px; font-weight: 700; margin-bottom: 15px; color: #444; }
+        table { width: 100%; border-collapse: separate; border-spacing: 5px; }
+        th { font-size: 11px; color: #666; padding-bottom: 8px; }
         
+        /* 膠囊形狀日期格子 */
         td {
-            background: rgba(255, 255, 255, 0.4); height: 70px;
-            border-radius: 20px; border: 0.5px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3); height: 55px;
+            border-radius: 30px; /* 膠囊形狀的核心 */
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
             transition: all 0.2s ease; cursor: pointer; position: relative; touch-action: none;
         }
-        td:active { transform: scale(0.92); }
+        td:active { transform: scale(0.88); }
 
-        .date-num { font-size: 18px; font-weight: 600; }
-        
-        /* 備註文字：絕對定位在中心，不影響佈局 */
+        .date-num { font-size: 16px; font-weight: 600; margin-top: -5px; }
         .note-text {
-            font-size: 11px; font-weight: 700;
-            position: absolute; bottom: 12px; left: 0; right: 0;
-            height: 14px; pointer-events: none;
+            font-size: 9px; font-weight: 700;
+            position: absolute; bottom: 8px; left: 0; right: 0;
+            height: 12px; pointer-events: none;
         }
 
         .is-rest { background: var(--rest-pink) !important; color: white !important; border: none; }
         .is-off { background: var(--off-blue) !important; color: white !important; border: none; }
 
         .btn-export {
-            margin-top: 25px; padding: 15px; border-radius: 25px;
-            width: 100%; max-width: 380px; background: #333;
-            color: white; font-size: 16px; font-weight: 600; border: none;
+            margin-top: 20px; padding: 12px; border-radius: 20px;
+            width: 95vw; max-width: 350px; background: #333;
+            color: white; font-size: 14px; font-weight: 600; border: none;
         }
     </style>
 </head>
@@ -93,7 +92,7 @@
     </div>
 
     <div id="capture-area">
-        <div style="color: #8E9799; font-size: 10px; letter-spacing: 2px; margin-bottom: 5px;">2026 SCHEDULE</div>
+        <div style="color: #666; font-size: 9px; letter-spacing: 2px; margin-bottom: 5px;">2026 PREMIUM</div>
         <div class="title-month" id="mLabel">2月 排休表</div>
         <table>
             <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
@@ -129,14 +128,13 @@
                     else {
                         const dateId = d;
                         const saved = memory[currentKey]?.[dateId] || { class: '', note: '' };
-                        
                         cell.innerHTML = `<div class="date-num">${d}</div><div id="n-${d}" class="note-text">${saved.note}</div>`;
                         if(saved.class) cell.className = saved.class;
 
                         let timer = null;
                         cell.onpointerdown = () => {
                             timer = setTimeout(() => {
-                                let v = prompt("輸入自訂文字（會覆蓋在顏色上）：", document.getElementById('n-'+dateId).innerText);
+                                let v = prompt("編輯文字：", document.getElementById('n-'+dateId).innerText);
                                 if(v!==null) {
                                     document.getElementById('n-'+dateId).innerText = v;
                                     updateDay(currentKey, dateId, cell.className, v);
@@ -176,7 +174,7 @@
         }
 
         function exportImg() {
-            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: '#B8C6DB', borderRadius: 40 }).then(c => {
+            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: '#B8C6DB', borderRadius: 35 }).then(c => {
                 let l = document.createElement('a'); l.download = `排休1號.png`;
                 l.href = c.toDataURL(); l.click();
             });
