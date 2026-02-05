@@ -10,8 +10,9 @@
     <style>
         :root {
             --bg-main: #B8C6DB; 
-            --glass: rgba(255, 255, 255, 0.25); 
-            --gold: #d4af37; 
+            --glass-core: rgba(255, 255, 255, 0.25); 
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --gold-line: #d4af37; 
             --rest-pink: rgba(226, 166, 166, 0.9); 
             --off-blue: rgba(162, 185, 188, 0.9);  
         }
@@ -23,11 +24,11 @@
             display: flex; flex-direction: column; align-items: center;
             height: 100vh; color: #333;
             -webkit-touch-callout: none; user-select: none;
-            overflow: hidden; /* 鎖定畫面高度 */
+            overflow: hidden;
         }
 
-        /* 頂部下移，專屬光影店名 */
-        .header { padding: 60px 20px 0px; text-align: center; }
+        /* 頂部下移，光影店名 */
+        .header { padding: 60px 20px 10px; text-align: center; }
         .shop-name {
             font-size: 24px; font-weight: 700;
             background: linear-gradient(to right, #666 20%, #fff 40%, #fff 60%, #666 80%);
@@ -38,59 +39,49 @@
         }
         @keyframes shine { to { background-position: 200% center; } }
 
-        /* iOS 多工軌道容器 */
-        .viewport {
-            width: 100vw; flex: 1;
-            display: flex; align-items: center;
-            overflow: visible; position: relative;
+        /* 滑動容器 */
+        .swipe-zone {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            width: 100vw; perspective: 1000px;
         }
 
-        .track {
-            display: flex;
-            position: absolute;
-            left: 0;
-            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            will-change: transform;
-        }
-
-        /* 月份卡片：縮小一點以顯示隔壁分頁，達成多工感 */
-        .month-card {
-            width: 88vw; max-width: 340px;
-            margin: 0 6vw; /* 讓左右分頁露出一點邊緣 */
-            background: var(--glass); 
+        /* 單張卡片樣式：iOS 26 透亮玻璃 */
+        #capture-area {
+            background: var(--glass-core); 
             backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            padding: 25px 15px; border-radius: 40px;
-            text-align: center; box-sizing: border-box;
-            border: 0.8px solid var(--gold);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            transform: scale(0.95); /* 未選中時稍微縮小 */
-            transition: transform 0.3s ease;
+            padding: 25px 15px; border-radius: 42px;
+            width: 90vw; max-width: 350px; text-align: center;
+            box-sizing: border-box;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform, opacity;
         }
-        .month-card.active { transform: scale(1); } /* 選中時放大 */
 
-        .title-month { font-size: 22px; font-weight: 700; margin-bottom: 15px; color: #444; }
-        table { width: 100%; border-collapse: separate; border-spacing: 5px; }
+        .title-month { font-size: 24px; font-weight: 700; margin-bottom: 15px; color: #444; }
+        table { width: 100%; border-collapse: separate; border-spacing: 6px; }
         th { font-size: 11px; color: #666; padding-bottom: 10px; opacity: 0.6; }
         
-        /* 膠囊型日期 */
+        /* 膠囊型日期格子 */
         td {
             background: rgba(255, 255, 255, 0.2); 
-            height: 52px; border-radius: 26px; 
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: background 0.2s; cursor: pointer; position: relative;
+            height: 56px; border-radius: 28px; 
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            transition: background 0.2s; cursor: pointer; position: relative; touch-action: none;
         }
-        .date-num { font-size: 17px; font-weight: 600; margin-top: -2px; }
-        .note-text { font-size: 9px; font-weight: 700; position: absolute; bottom: 8px; left: 0; right: 0; }
+        .date-num { font-size: 18px; font-weight: 600; margin-top: -2px; }
+        .note-text { font-size: 10px; font-weight: 700; position: absolute; bottom: 8px; left: 0; right: 0; pointer-events: none; }
 
         .is-rest { background: var(--rest-pink) !important; color: white !important; }
         .is-off { background: var(--off-blue) !important; color: white !important; }
 
-        /* 底部按鈕區 */
-        .footer { padding-bottom: 40px; width: 90vw; max-width: 340px; }
+        /* 底部導引與按鈕 */
+        .footer { padding-bottom: 40px; text-align: center; }
+        .hint { font-size: 11px; color: #777; margin-bottom: 15px; opacity: 0.6; letter-spacing: 1px; }
         .btn-export {
-            padding: 16px; border-radius: 28px; width: 100%;
+            padding: 16px; border-radius: 28px; width: 90vw; max-width: 350px;
             background: rgba(0,0,0,0.8); color: white; font-weight: 600;
-            border: 0.5px solid var(--gold); box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 0.5px solid var(--gold-line); box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -98,156 +89,135 @@
 
     <div class="header">
         <div class="shop-name">專屬空間沙龍</div>
-        <div style="color: #666; font-size: 10px; letter-spacing: 4px; margin-top: 5px; opacity: 0.6;">PREMIUM 1.0</div>
+        <div style="color: #666; font-size: 10px; letter-spacing: 3px; margin-top: 5px; opacity: 0.7;">PREMIUM NO.1</div>
     </div>
 
-    <div class="viewport" id="viewport">
-        <div class="track" id="track">
-            </div>
+    <div class="swipe-zone" id="swipeZone">
+        <div id="capture-area">
+            <div style="color: #444; font-size: 9px; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.5;">PREMIUM SCHEDULE</div>
+            <div class="title-month" id="mLabel">2月 排休表</div>
+            <table>
+                <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
+                <tbody id="calBody"></tbody>
+            </table>
+            <div class="shop-name" style="font-size: 18px; margin-top: 30px; border-top: 0.5px solid rgba(255,255,255,0.2); padding-top: 15px;">專屬空間沙龍</div>
+        </div>
     </div>
 
     <div class="footer">
-        <button class="btn-export" onclick="exportImg()">📸 儲存本月圖檔</button>
+        <div class="hint">← 左右滑動換月 →</div>
+        <button class="btn-export" onclick="exportImg()">📸 儲存精美圖檔</button>
     </div>
 
     <script>
-        const track = document.getElementById('track');
+        const card = document.getElementById('capture-area');
+        const swipeZone = document.getElementById('swipeZone');
         let memory = JSON.parse(localStorage.getItem('salon_1_memory')) || {};
-        let currentMonthDate = new Date(); // 以今天為基準
-        currentMonthDate.setDate(1);
+        let currentYear = 2026, currentMonth = 1; // 預設 2026/02
 
-        function renderTrack() {
-            track.innerHTML = '';
-            // 產生 前、中、後 三個月份
-            for (let i = -1; i <= 1; i++) {
-                let d = new Date(currentMonthDate);
-                d.setMonth(d.getMonth() + i);
-                track.appendChild(createMonthCard(d.getFullYear(), d.getMonth(), i === 0));
-            }
-            updateTrackPosition(false);
-        }
-
-        function createMonthCard(y, m, isActive) {
-            const card = document.createElement('div');
-            card.className = `month-card ${isActive ? 'active' : ''}`;
-            card.id = isActive ? 'current-card' : '';
-            
-            const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+        function render(y, m) {
+            const body = document.getElementById('calBody');
             const currentKey = `${y}-${m}`;
-            
-            let html = `
-                <div style="color: #555; font-size: 9px; letter-spacing: 3px; margin-bottom: 8px; opacity: 0.5;">${y} SCHEDULE</div>
-                <div class="title-month">${monthNames[m]} 排休表</div>
-                <table>
-                    <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
-                    <tbody>`;
+            const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+            document.getElementById('mLabel').innerText = `${monthNames[m]} 排休表`;
+            body.innerHTML = '';
             
             let first = new Date(y, m, 1).getDay(), start = (first === 0) ? 6 : first - 1;
-            let days = new Date(y, m + 1, 0).getDate(), dateNum = 1;
+            let days = new Date(y, m+1, 0).getDate(), d = 1;
+            
+            for (let i=0; i<6; i++) {
+                let row = document.createElement('tr');
+                for (let j=0; j<7; j++) {
+                    let cell = document.createElement('td');
+                    if (i === 0 && j < start || d > days) { cell.style.background = 'transparent'; cell.style.border = 'none'; }
+                    else {
+                        const dateId = d;
+                        const saved = memory[currentKey]?.[dateId] || { class: '', note: '' };
+                        cell.innerHTML = `<div class="date-num">${d}</div><div id="n-${d}" class="note-text">${saved.note}</div>`;
+                        if(saved.class) cell.className = saved.class;
 
-            for (let i = 0; i < 6; i++) {
-                html += '<tr>';
-                for (let j = 0; j < 7; j++) {
-                    if (i === 0 && j < start || dateNum > days) {
-                        html += '<td style="background:transparent; border:none;"></td>';
-                    } else {
-                        const dId = dateNum;
-                        const saved = memory[currentKey]?.[dId] || { class: '', note: '' };
-                        html += `<td class="${saved.class}" onclick="toggleDay(this, '${currentKey}', ${dId})" oncontextmenu="editNote(event, this, '${currentKey}', ${dId})">
-                            <div class="date-num">${dId}</div>
-                            <div class="note-text">${saved.note}</div>
-                        </td>`;
-                        dateNum++;
+                        let timer = null;
+                        cell.onpointerdown = () => { timer = setTimeout(() => {
+                            let v = prompt("編輯文字：", document.getElementById('n-'+dateId).innerText);
+                            if(v!==null) { document.getElementById('n-'+dateId).innerText = v; updateDay(currentKey, dateId, cell.className, v); }
+                            timer = null;
+                        }, 600); };
+
+                        cell.onpointerup = () => { if(timer) { clearTimeout(timer);
+                            const noteObj = document.getElementById('n-'+dateId);
+                            if (!cell.classList.contains('is-rest') && !cell.classList.contains('is-off')) {
+                                cell.classList.add('is-rest'); noteObj.innerText = noteObj.innerText || '店休';
+                            } else if(cell.classList.contains('is-rest')) {
+                                cell.classList.replace('is-rest', 'is-off'); noteObj.innerText = noteObj.innerText === '店休' ? '排休' : noteObj.innerText;
+                            } else {
+                                cell.classList.remove('is-off'); noteObj.innerText = noteObj.innerText === '排休' ? '' : noteObj.innerText;
+                            }
+                            updateDay(currentKey, dateId, cell.className, noteObj.innerText);
+                            timer = null;
+                        } };
+                        d++;
                     }
+                    row.appendChild(cell);
                 }
-                html += '</tr>';
-                if (dateNum > days) break;
+                body.appendChild(row); if (d > days) break;
             }
-            html += `</tbody></table><div class="shop-name" style="font-size:16px; margin-top:25px; opacity:0.3;">專屬空間沙龍</div>`;
-            card.innerHTML = html;
-            return card;
         }
 
-        // --- 點擊與長按邏輯 ---
-        window.toggleDay = function(el, key, dId) {
-            const noteEl = el.querySelector('.note-text');
-            if (!el.classList.contains('is-rest') && !el.classList.contains('is-off')) {
-                el.classList.add('is-rest'); noteEl.innerText = noteEl.innerText || '店休';
-            } else if (el.classList.contains('is-rest')) {
-                el.classList.replace('is-rest', 'is-off'); noteEl.innerText = noteEl.innerText === '店休' ? '排休' : noteEl.innerText;
-            } else {
-                el.classList.remove('is-off'); noteEl.innerText = noteEl.innerText === '排休' ? '' : noteEl.innerText;
-            }
-            updateMemory(key, dId, el.className, noteEl.innerText);
-        };
-
-        window.editNote = function(e, el, key, dId) {
-            e.preventDefault();
-            let v = prompt("編輯備註：", el.querySelector('.note-text').innerText);
-            if (v !== null) {
-                el.querySelector('.note-text').innerText = v;
-                updateMemory(key, dId, el.className, v);
-            }
-        };
-
-        function updateMemory(key, dId, cls, note) {
-            if (!memory[key]) memory[key] = {};
+        function updateDay(key, dId, cls, note) {
+            if(!memory[key]) memory[key] = {};
             memory[key][dId] = { class: cls, note: note };
             localStorage.setItem('salon_1_memory', JSON.stringify(memory));
         }
 
-        // --- 軌道滑動物理引擎 ---
-        let startX = 0, currentTranslate = 0, prevTranslate = 0, isDragging = false;
-        const viewport = document.getElementById('viewport');
+        // --- 穩定的滑動換月邏輯 ---
+        let startX = 0, isSwiping = false;
 
-        viewport.addEventListener('touchstart', (e) => {
+        swipeZone.addEventListener('touchstart', e => {
             startX = e.touches[0].clientX;
-            isDragging = true;
-            track.style.transition = 'none';
+            isSwiping = true;
         }, {passive: true});
 
-        viewport.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            const currentX = e.touches[0].clientX;
-            const diff = currentX - startX;
-            currentTranslate = prevTranslate + diff;
-            track.style.transform = `translateX(${currentTranslate}px)`;
-        }, {passive: true});
+        swipeZone.addEventListener('touchend', e => {
+            if (!isSwiping) return;
+            let endX = e.changedTouches[0].clientX;
+            let diff = startX - endX;
 
-        viewport.addEventListener('touchend', (e) => {
-            isDragging = false;
-            const threshold = window.innerWidth * 0.3; // 滑動超過 30% 寬度就換頁
-            const movedBy = currentTranslate - prevTranslate;
+            if (Math.abs(diff) > 80) {
+                const dir = diff > 0 ? 1 : -1; // 1 下個月, -1 上個月
+                
+                // 1. 動畫彈出 (向左或向右滑出)
+                card.style.transform = `translateX(${-dir * 100}vw) rotate(${-dir * 10}deg)`;
+                card.style.opacity = "0";
 
-            if (movedBy < -threshold) { // 向左滑 -> 下個月
-                currentMonthDate.setMonth(currentMonthDate.getMonth() + 1);
-                renderTrack();
-            } else if (movedBy > threshold) { // 向右滑 -> 上個月
-                currentMonthDate.setMonth(currentMonthDate.getMonth() - 1);
-                renderTrack();
-            } else { // 彈回原位
-                updateTrackPosition(true);
+                setTimeout(() => {
+                    // 2. 更新數據
+                    currentMonth += dir;
+                    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+                    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                    render(currentYear, currentMonth);
+
+                    // 3. 瞬間移到另一側準備進入
+                    card.style.transition = 'none';
+                    card.style.transform = `translateX(${dir * 100}vw) rotate(${dir * 10}deg)`;
+                    
+                    setTimeout(() => {
+                        // 4. 平滑進入
+                        card.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s';
+                        card.style.transform = 'translateX(0) rotate(0)';
+                        card.style.opacity = "1";
+                    }, 50);
+                }, 300);
             }
+            isSwiping = false;
         });
 
-        function updateTrackPosition(animate) {
-            const cardWidth = window.innerWidth;
-            // 讓中點對齊
-            prevTranslate = -cardWidth; 
-            currentTranslate = prevTranslate;
-            if (animate) track.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-            track.style.transform = `translateX(${prevTranslate}px)`;
-        }
-
-        window.exportImg = function() {
-            const card = document.getElementById('current-card');
+        function exportImg() {
             html2canvas(card, { scale: 3, backgroundColor: null, borderRadius: 40 }).then(c => {
-                let l = document.createElement('a'); l.download = '排休1號版.png';
+                let l = document.createElement('a'); l.download = `排休1號-${currentMonth+1}月.png`;
                 l.href = c.toDataURL(); l.click();
             });
-        };
-
-        renderTrack();
+        }
+        render(currentYear, currentMonth);
     </script>
 </body>
 </html>
