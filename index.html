@@ -5,177 +5,195 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>專屬空間沙龍 - 排休 1 號</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>專屬空間沙龍 - 專屬 1 號</title>
+    
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         :root {
-            /* 調整為更清透的藍灰色調 */
             --bg-main: #B8C6DB; 
-            --glass-core: rgba(255, 255, 255, 0.25); /* 更薄的玻璃 */
+            --glass-core: rgba(255, 255, 255, 0.22); 
             --glass-border: rgba(255, 255, 255, 0.4);
             --gold-line: #d4af37; 
-            --rest-pink: rgba(226, 166, 166, 0.85); /* 半透明莫蘭迪粉 */
-            --off-blue: rgba(162, 185, 188, 0.85);  /* 半透明莫蘭迪藍 */
+            --text-dark: #333;
         }
 
         body {
-            font-family: -apple-system, sans-serif;
-            /* 模擬背景的高級感 */
-            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            margin: 0; padding: 10px;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(160deg, #a1c4fd 0%, #c2e9fb 100%);
+            margin: 0; padding: 0;
+            min-height: 100vh; color: var(--text-dark);
             -webkit-touch-callout: none; user-select: none;
-            overflow: hidden; /* 防止滾動造成底部留白 */
+            overflow: hidden; /* 鎖定畫面不亂捲動 */
         }
 
-        .controls { margin-top: 20px; margin-bottom: 15px; display: flex; gap: 8px; }
-        select {
-            background: rgba(255, 255, 255, 0.5); border: 0.5px solid var(--gold-line);
-            border-radius: 12px; padding: 6px 12px; font-size: 14px;
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        /* 頂部空間與店名 */
+        .header {
+            padding: 60px 20px 10px; /* 增加頂部間距往下移 */
+            text-align: center;
         }
-
-        /* 核心玻璃容器：改善留白並強化透明感 */
-        #capture-area {
-            background: var(--glass-core); 
-            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            padding: 25px 15px; border-radius: 40px;
-            width: 92vw; max-width: 350px; text-align: center;
-            box-sizing: border-box;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 10px; /* 縮減底部間距 */
-        }
-
         .shop-name {
-            margin-top: 20px; padding-top: 15px;
-            font-size: 22px; font-weight: 700;
-            background: linear-gradient(to right, #666 20%, #fff 40%, #fff 60%, #666 80%);
+            font-size: 26px; font-weight: 700;
+            background: linear-gradient(to right, #555 20%, #fff 40%, #fff 60%, #555 80%);
             background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: shine 5s linear infinite;
-            letter-spacing: 6px; border-top: 0.5px solid rgba(255,255,255,0.3);
+            letter-spacing: 6px;
         }
-
         @keyframes shine { to { background-position: 200% center; } }
 
-        .title-month { font-size: 24px; font-weight: 700; margin-bottom: 15px; color: #444; }
-        table { width: 100%; border-collapse: separate; border-spacing: 6px; }
-        th { font-size: 12px; color: #555; padding-bottom: 10px; }
-        
-        /* 透亮膠囊日期格子 */
-        td {
-            background: rgba(255, 255, 255, 0.2); 
-            height: 58px;
-            border-radius: 29px; /* 完美半圓膠囊 */
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.2s ease; cursor: pointer; position: relative;
+        /* 主系統容器：拉長放大並下移 */
+        .system-wrapper {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 72vh; /* 拉長容器高度 */
         }
-        td:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.4); }
 
-        .date-num { font-size: 18px; font-weight: 600; margin-top: -2px; }
-        .note-text { font-size: 10px; font-weight: 700; position: absolute; bottom: 8px; left: 0; right: 0; }
+        .glass-container {
+            background: var(--glass-core);
+            backdrop-filter: blur(45px); -webkit-backdrop-filter: blur(45px);
+            width: 92vw;
+            max-width: 380px;
+            height: 100%; /* 填滿拉長的容器 */
+            padding: 30px 15px;
+            border-radius: 45px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+            box-sizing: border-box;
+            transition: transform 0.3s ease-out; /* 為了滑動動畫 */
+        }
 
-        .is-rest { background: var(--rest-pink) !important; color: white !important; border: none; }
-        .is-off { background: var(--off-blue) !important; color: white !important; border: none; }
+        /* 月份標題樣式 */
+        .fc-header-toolbar { margin-bottom: 25px !important; }
+        .fc-toolbar-title { font-size: 22px !important; font-weight: 700 !important; color: #444; }
 
-        .btn-export {
-            margin-bottom: 20px; padding: 14px; border-radius: 25px;
-            width: 92vw; max-width: 350px; background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            color: white; font-size: 15px; font-weight: 600; border: 0.5px solid var(--gold-line);
+        /* 膠囊化日期格細節 */
+        .fc .fc-daygrid-day {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-radius: 28px !important;
+            margin: 5px !important;
+            border: 1px solid rgba(255,255,255,0.25) !important;
+            height: 65px !important; /* 增加格子高度 */
+        }
+        .fc .fc-day-today { 
+            background: rgba(255, 255, 255, 0.4) !important; 
+            border: 1.5px solid var(--gold-line) !important; 
+        }
+        .fc .fc-daygrid-day-number { font-weight: 700; padding: 12px !important; font-size: 16px; }
+
+        /* 底部 iOS 導覽列：專屬 1 號功能全保留 */
+        .tab-bar {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 90vw; max-width: 360px; height: 70px;
+            background: rgba(30,30,30,0.85); backdrop-filter: blur(25px);
+            border-radius: 35px; display: flex; justify-content: space-around; align-items: center;
+            border: 0.5px solid var(--gold-line); z-index: 1000;
+        }
+        .tab-item { color: #999; text-align: center; font-size: 11px; flex: 1; transition: 0.3s; }
+        .tab-item.active { color: var(--gold-line); transform: translateY(-3px); }
+        .tab-item i { font-size: 22px; display: block; margin-bottom: 4px; }
+
+        /* 新增按鈕 */
+        .fab {
+            position: fixed; bottom: 120px; right: 30px;
+            width: 60px; height: 60px; background: rgba(0,0,0,0.8);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 28px; border: 1.5px solid var(--gold-line);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3); z-index: 999;
+        }
+        
+        /* 滑動提示語 */
+        .swipe-hint {
+            font-size: 11px; color: #777; margin-top: 15px; font-weight: 500;
+            opacity: 0.7; letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <select id="ySelect" onchange="render()"></select>
-        <select id="mSelect" onchange="render()"></select>
-    </div>
-
-    <div id="capture-area">
-        <div style="color: #444; font-size: 10px; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.6;">PREMIUM SCHEDULE</div>
-        <div class="title-month" id="mLabel">2月 排休表</div>
-        <table>
-            <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
-            <tbody id="calBody"></tbody>
-        </table>
+    <div class="header">
         <div class="shop-name">專屬空間沙龍</div>
+        <div style="color: #666; font-size: 10px; letter-spacing: 3px; margin-top: 6px; opacity: 0.8;">EXCLUSIVE NO.1</div>
     </div>
 
-    <button class="btn-export" onclick="exportImg()">📸 儲存精美圖檔</button>
+    <div class="system-wrapper">
+        <div class="glass-container" id="swipe-zone">
+            <div id="calendar"></div>
+        </div>
+        <div class="swipe-hint">← 左右滑動切換月份 →</div>
+    </div>
+
+    <div class="fab" onclick="quickAdd()">+</div>
+
+    <nav class="tab-bar">
+        <div class="tab-item active" onclick="navTo('calendar')"><i class="fas fa-calendar-alt"></i>月表</div>
+        <div class="tab-item" onclick="navTo('cust')"><i class="fas fa-user-friends"></i>顧客</div>
+        <div class="tab-item" onclick="navTo('money')"><i class="fas fa-coins"></i>業績</div>
+        <div class="tab-item" onclick="navTo('set')"><i class="fas fa-cog"></i>設定</div>
+    </nav>
 
     <script>
-        const yS = document.getElementById('ySelect'), mS = document.getElementById('mSelect');
-        let memory = JSON.parse(localStorage.getItem('salon_1_memory')) || {};
+        let calendar;
 
-        for(let i=2025; i<=2027; i++) yS.add(new Option(i+' 年', i));
-        for(let i=1; i<=12; i++) mS.add(new Option(i+' 月', i-1));
-        yS.value = 2026; mS.value = 1;
-
-        function render() {
-            const body = document.getElementById('calBody'), y = parseInt(yS.value), m = parseInt(mS.value);
-            const currentKey = `${y}-${m}`;
-            document.getElementById('mLabel').innerText = (m+1)+'月 排休表';
-            body.innerHTML = '';
-            
-            let first = new Date(y, m, 1).getDay(), start = (first === 0) ? 6 : first - 1;
-            let days = new Date(y, m+1, 0).getDate(), d = 1;
-            
-            for (let i=0; i<6; i++) {
-                let row = document.createElement('tr');
-                for (let j=0; j<7; j++) {
-                    let cell = document.createElement('td');
-                    if (i === 0 && j < start || d > days) { cell.style.background = 'transparent'; cell.style.border = 'none'; }
-                    else {
-                        const dateId = d;
-                        const saved = memory[currentKey]?.[dateId] || { class: '', note: '' };
-                        cell.innerHTML = `<div class="date-num">${d}</div><div id="n-${d}" class="note-text">${saved.note}</div>`;
-                        if(saved.class) cell.className = saved.class;
-
-                        let timer = null;
-                        cell.onpointerdown = () => { timer = setTimeout(() => {
-                            let v = prompt("編輯文字：", document.getElementById('n-'+dateId).innerText);
-                            if(v!==null) { document.getElementById('n-'+dateId).innerText = v; updateDay(currentKey, dateId, cell.className, v); }
-                            timer = null;
-                        }, 600); };
-
-                        cell.onpointerup = () => { if(timer) { clearTimeout(timer);
-                            const noteObj = document.getElementById('n-'+dateId);
-                            if (!cell.classList.contains('is-rest') && !cell.classList.contains('is-off')) {
-                                cell.classList.add('is-rest'); noteObj.innerText = noteObj.innerText || '店休';
-                            } else if(cell.classList.contains('is-rest')) {
-                                cell.classList.replace('is-rest', 'is-off'); noteObj.innerText = noteObj.innerText === '店休' ? '排休' : noteObj.innerText;
-                            } else {
-                                cell.classList.remove('is-off'); noteObj.innerText = noteObj.innerText === '排休' ? '' : noteObj.innerText;
-                            }
-                            updateDay(currentKey, dateId, cell.className, noteObj.innerText);
-                            timer = null;
-                        } };
-                        d++;
-                    }
-                    row.appendChild(cell);
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'zh-tw',
+                headerToolbar: { left: 'title', center: '', right: '' }, // 隱藏按鈕，改用滑動
+                dayHeaderFormat: { weekday: 'narrow' },
+                height: 'auto',
+                events: [], // 這裡串接您的 Firebase 或 LocalStorage
+                dateClick: function(info) {
+                    Swal.fire({ title: info.dateStr, text: '今日無預約', background: 'rgba(255,255,255,0.95)', confirmButtonColor: '#333' });
                 }
-                body.appendChild(row);
-                if (d > days) break;
-            }
-        }
-
-        function updateDay(monthKey, dateId, className, note) {
-            if(!memory[monthKey]) memory[monthKey] = {};
-            memory[monthKey][dateId] = { class: className, note: note };
-            localStorage.setItem('salon_1_memory', JSON.stringify(memory));
-        }
-
-        function exportImg() {
-            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: null, borderRadius: 40 }).then(c => {
-                let l = document.createElement('a'); l.download = `排休1號.png`;
-                l.href = c.toDataURL(); l.click();
             });
+            calendar.render();
+
+            // --- 左右滑動切換月份邏輯 ---
+            let startX = 0;
+            const swipeZone = document.getElementById('swipe-zone');
+
+            swipeZone.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+            }, {passive: true});
+
+            swipeZone.addEventListener('touchend', e => {
+                let endX = e.changedTouches[0].clientX;
+                let diff = startX - endX;
+
+                if (Math.abs(diff) > 80) { // 滑動門檻 80px
+                    if (diff > 0) {
+                        // 向左滑 -> 下個月
+                        swipeZone.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            calendar.next();
+                            swipeZone.style.transform = 'translateX(0)';
+                        }, 100);
+                    } else {
+                        // 向右滑 -> 上個月
+                        swipeZone.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            calendar.prev();
+                            swipeZone.style.transform = 'translateX(0)';
+                        }, 100);
+                    }
+                }
+            }, {passive: true});
+        });
+
+        function quickAdd() {
+            Swal.fire({ title: '新增預約', input: 'text', inputPlaceholder: '請輸入顧客名稱', confirmButtonText: '下一步', confirmButtonColor: '#d4af37' });
         }
-        render();
+
+        function navTo(page) {
+            // 切換分頁邏輯
+            console.log('跳轉至: ' + page);
+        }
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>
