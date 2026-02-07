@@ -27,7 +27,6 @@
             overflow: hidden;
         }
 
-        /* 頂部下移，光影店名 */
         .header { padding: 60px 20px 10px; text-align: center; }
         .shop-name {
             font-size: 24px; font-weight: 700;
@@ -39,15 +38,13 @@
         }
         @keyframes shine { to { background-position: 200% center; } }
 
-        /* 翻頁容器 */
         .page-container {
             flex: 1; width: 100vw;
             position: relative;
             display: flex; align-items: center; justify-content: center;
-            perspective: 1200px; /* 增加翻頁的立體感 */
+            perspective: 1200px;
         }
 
-        /* 通用卡片樣式 */
         .month-card {
             position: absolute;
             background: var(--glass-core); 
@@ -55,7 +52,7 @@
             padding: 25px 15px; border-radius: 42px;
             width: 90vw; max-width: 350px; text-align: center;
             box-sizing: border-box;
-            border: 1px solid var(--glass-border);
+            border: 0.8px solid var(--gold-line); 
             box-shadow: 0 15px 40px rgba(0,0,0,0.1);
             transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s;
             will-change: transform, opacity;
@@ -84,7 +81,6 @@
             border: 0.5px solid var(--gold-line); box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        /* 翻頁動畫類別 */
         .page-out-left { transform: translateX(-120vw) rotateY(-20deg); opacity: 0; }
         .page-out-right { transform: translateX(120vw) rotateY(20deg); opacity: 0; }
         .page-in-left { transform: translateX(-120vw) rotateY(-20deg); opacity: 0; transition: none; }
@@ -98,8 +94,7 @@
         <div style="color: #666; font-size: 10px; letter-spacing: 3px; margin-top: 5px; opacity: 0.7;">PREMIUM NO.1</div>
     </div>
 
-    <div class="page-container" id="pageContainer">
-        </div>
+    <div class="page-container" id="pageContainer"></div>
 
     <div class="footer">
         <div style="font-size: 11px; color: #777; margin-bottom: 15px; opacity: 0.6;">← 左右翻頁換月 →</div>
@@ -109,14 +104,13 @@
     <script>
         const container = document.getElementById('pageContainer');
         let memory = JSON.parse(localStorage.getItem('salon_1_memory')) || {};
-        let currentYear = 2026, currentMonth = 1; // 預設 2 月
+        let currentYear = 2026, currentMonth = 1;
 
         function createCard(y, m) {
             const card = document.createElement('div');
             card.className = 'month-card';
             const currentKey = `${y}-${m}`;
             const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
-            
             let first = new Date(y, m, 1).getDay(), start = (first === 0) ? 6 : first - 1;
             let days = new Date(y, m+1, 0).getDate(), d = 1;
             
@@ -127,8 +121,8 @@
                     if (i === 0 && j < start || d > days) {
                         tableHtml += '<td style="background:transparent; border:none;"></td>';
                     } else {
-                        const dateId = d;
-                        const saved = memory[currentKey]?.[dateId] || { class: '', note: '' };
+                        const dId = d;
+                        const saved = memory[currentKey]?.[dId] || { class: '', note: '' };
                         tableHtml += `<td class="${saved.class}" onclick="handleDateClick(this, '${currentKey}', ${d})" oncontextmenu="handleDateLongPress(event, this, '${currentKey}', ${d})">
                             <div class="date-num">${d}</div><div class="note-text">${saved.note}</div>
                         </td>`;
@@ -138,68 +132,42 @@
                 tableHtml += '</tr>';
                 if (d > days) break;
             }
-            tableHtml += '</tbody></table>';
-
-            card.innerHTML = `
-                <div style="color: #444; font-size: 9px; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.5;">${y} PREMIUM</div>
-                <div class="title-month">${monthNames[m]} 排休表</div>
-                ${tableHtml}
-                <div class="shop-name" style="font-size: 18px; margin-top: 30px; border-top: 0.5px solid rgba(255,255,255,0.2); padding-top: 15px;">專屬空間沙龍</div>
-            `;
+            card.innerHTML = `<div style="color:#444; font-size:9px; letter-spacing:2px; margin-bottom:5px; opacity:0.5;">${y} PREMIUM</div><div class="title-month">${monthNames[m]} 排休表</div>${tableHtml}</table><div class="shop-name" style="font-size:18px; margin-top:30px; border-top:0.5px solid rgba(255,255,255,0.2); padding-top:15px;">專屬空間沙龍</div>`;
             return card;
         }
 
-        // 初始渲染
         let activeCard = createCard(currentYear, currentMonth);
         container.appendChild(activeCard);
 
-        // --- 核心翻頁邏輯 (左右翻書) ---
         let startX = 0, isSwiping = false;
-
         container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isSwiping = true; }, {passive: true});
-
         container.addEventListener('touchend', e => {
             if (!isSwiping) return;
             let diff = startX - e.changedTouches[0].clientX;
-            if (Math.abs(diff) > 70) {
-                const dir = diff > 0 ? 1 : -1; // 1:下個月, -1:上個月
-                changeMonth(dir);
-            }
+            if (Math.abs(diff) > 70) changeMonth(diff > 0 ? 1 : -1);
             isSwiping = false;
         });
 
         function changeMonth(dir) {
             const oldCard = activeCard;
-            
-            // 1. 計算新日期
             currentMonth += dir;
             if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-
-            // 2. 預先製作新卡片 (此時在後台，日期已經畫好了，不會跳動)
             const newCard = createCard(currentYear, currentMonth);
             newCard.className = 'month-card ' + (dir > 0 ? 'page-in-right' : 'page-in-left');
             container.appendChild(newCard);
-
-            // 3. 觸發翻頁動畫 (強制重繪)
             newCard.offsetHeight; 
             oldCard.classList.add(dir > 0 ? 'page-out-left' : 'page-out-right');
             newCard.classList.remove('page-in-right', 'page-in-left');
-            
             activeCard = newCard;
             setTimeout(() => { container.removeChild(oldCard); }, 500);
         }
 
-        // --- 功能函數 ---
         window.handleDateClick = function(el, key, dId) {
             const noteObj = el.querySelector('.note-text');
-            if (!el.classList.contains('is-rest') && !el.classList.contains('is-off')) {
-                el.classList.add('is-rest'); noteObj.innerText = noteObj.innerText || '店休';
-            } else if(el.classList.contains('is-rest')) {
-                el.classList.replace('is-rest', 'is-off'); noteObj.innerText = noteObj.innerText === '店休' ? '排休' : noteObj.innerText;
-            } else {
-                el.classList.remove('is-off'); noteObj.innerText = noteObj.innerText === '排休' ? '' : noteObj.innerText;
-            }
+            if (!el.classList.contains('is-rest') && !el.classList.contains('is-off')) { el.classList.add('is-rest'); noteObj.innerText = noteObj.innerText || '店休'; }
+            else if(el.classList.contains('is-rest')) { el.classList.replace('is-rest', 'is-off'); noteObj.innerText = noteObj.innerText === '店休' ? '排休' : noteObj.innerText; }
+            else { el.classList.remove('is-off'); noteObj.innerText = noteObj.innerText === '排休' ? '' : noteObj.innerText; }
             updateMemory(key, dId, el.className, noteObj.innerText);
         };
 
@@ -215,10 +183,19 @@
             localStorage.setItem('salon_1_memory', JSON.stringify(memory));
         }
 
+        // --- 修正後的導出功能：強行渲染背景顏色 ---
         window.doExport = function() {
-            html2canvas(activeCard, { scale: 3, backgroundColor: null, borderRadius: 40 }).then(c => {
-                let l = document.createElement('a'); l.download = `排休1號-${currentMonth+1}月.png`;
-                l.href = c.toDataURL(); l.click();
+            // 在截圖時，動態給卡片套一個「實色」背景，防止變黑
+            html2canvas(activeCard, { 
+                scale: 3, 
+                backgroundColor: '#B8C6DB', // 強制鎖定為莫蘭迪藍灰
+                borderRadius: 40,
+                useCORS: true
+            }).then(c => {
+                let l = document.createElement('a');
+                l.download = `專屬空間沙龍-排休表.png`;
+                l.href = c.toDataURL("image/png");
+                l.click();
             });
         };
     </script>
