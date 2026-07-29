@@ -156,6 +156,25 @@
         }
         .ios-btn.cancel { border-right: 0.5px solid rgba(0,0,0,0.15); color: #ff3b30; }
         .ios-btn.confirm { font-weight: 600; }
+
+        /* 圖片預覽彈窗 (針對手機存圖優化) */
+        .preview-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+            z-index: 2000; padding: 20px; box-sizing: border-box;
+        }
+        .preview-overlay.active { display: flex; }
+        .preview-img {
+            max-width: 90vw; max-height: 70vh; border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain;
+            margin-bottom: 20px;
+        }
+        .preview-tip { color: #fff; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 15px; }
+        .preview-close {
+            padding: 12px 30px; background: #fff; color: #333; border-radius: 30px;
+            font-weight: 600; border: none; font-size: 16px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -170,6 +189,13 @@
     <div class="footer">
         <div style="font-size: 11px; color: #777; margin-bottom: 15px; opacity: 0.6;">點擊快選 ｜ 左右翻頁 ｜ 長按自訂顏色</div>
         <button class="btn-export" onclick="doExport()">📸 儲存精美圖檔</button>
+    </div>
+
+    <!-- 圖片預覽與長按存圖視窗 -->
+    <div class="preview-overlay" id="previewOverlay">
+        <div class="preview-tip">👇 請「長按圖片」選擇儲存至相簿</div>
+        <img id="previewImg" class="preview-img" alt="排休表預覽">
+        <button class="preview-close" onclick="closePreview()">關閉視窗</button>
     </div>
 
     <div class="ios-modal-overlay" id="iosModal">
@@ -194,7 +220,10 @@
     <script>
         const container = document.getElementById('pageContainer');
         let memory = JSON.parse(localStorage.getItem('salon_1_memory')) || {};
-        let currentYear = 2026, currentMonth = 1;
+        
+        const now = new Date();
+        let currentYear = now.getFullYear();
+        let currentMonth = now.getMonth();
         let currentEditingTarget = null;
 
         function createCard(y, m) {
@@ -382,13 +411,17 @@
                     if(el) el.style.background = 'rgba(255, 255, 255, 0.4)';
                 }
             }).then(c => {
-                let l = document.createElement('a');
-                l.download = `排休1號-${currentMonth+1}月.png`;
-                l.href = c.toDataURL("image/png");
-                l.click();
+                let dataUrl = c.toDataURL("image/png");
+                // 彈出預覽視窗讓手機用戶可以直覺長按儲存
+                document.getElementById('previewImg').src = dataUrl;
+                document.getElementById('previewOverlay').classList.add('active');
             }).catch(err => {
-                alert("儲存圖片失敗，請確認您的瀏覽器是否支援或允許權限。");
+                alert("生成圖片失敗，請確認畫面是否正常載入。");
             });
+        };
+
+        window.closePreview = function() {
+            document.getElementById('previewOverlay').classList.remove('active');
         };
     </script>
 </body>
