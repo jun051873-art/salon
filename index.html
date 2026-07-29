@@ -157,7 +157,7 @@
         .ios-btn.cancel { border-right: 0.5px solid rgba(0,0,0,0.15); color: #ff3b30; }
         .ios-btn.confirm { font-weight: 600; }
 
-        /* 圖片預覽彈窗 (針對手機存圖優化) */
+        /* 圖片預覽與長按存圖視窗 */
         .preview-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
@@ -166,11 +166,11 @@
         }
         .preview-overlay.active { display: flex; }
         .preview-img {
-            max-width: 90vw; max-height: 70vh; border-radius: 24px;
+            max-width: 90vw; max-height: 65vh; border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain;
-            margin-bottom: 20px;
+            margin-bottom: 15px; background: #fff;
         }
-        .preview-tip { color: #fff; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 15px; }
+        .preview-tip { color: #fff; font-size: 16px; font-weight: 600; text-align: center; margin-bottom: 15px; }
         .preview-close {
             padding: 12px 30px; background: #fff; color: #333; border-radius: 30px;
             font-weight: 600; border: none; font-size: 16px; cursor: pointer;
@@ -193,7 +193,7 @@
 
     <!-- 圖片預覽與長按存圖視窗 -->
     <div class="preview-overlay" id="previewOverlay">
-        <div class="preview-tip">👇 請「長按圖片」選擇儲存至相簿</div>
+        <div class="preview-tip">👇 請「長按圖片」選擇加入相簿 / 儲存影像</div>
         <img id="previewImg" class="preview-img" alt="排休表預覽">
         <button class="preview-close" onclick="closePreview()">關閉視窗</button>
     </div>
@@ -221,10 +221,23 @@
         const container = document.getElementById('pageContainer');
         let memory = JSON.parse(localStorage.getItem('salon_1_memory')) || {};
         
-        const now = new Date();
-        let currentYear = now.getFullYear();
-        let currentMonth = now.getMonth();
+        // 記憶月份讀取：如果 localStorage 有存就讀取，沒有就抓系統當前年月
+        let savedPos = JSON.parse(localStorage.getItem('salon_1_pos'));
+        let currentYear, currentMonth;
+        if (savedPos && savedPos.year !== undefined && savedPos.month !== undefined) {
+            currentYear = savedPos.year;
+            currentMonth = savedPos.month;
+        } else {
+            const now = new Date();
+            currentYear = now.getFullYear();
+            currentMonth = now.getMonth();
+        }
+
         let currentEditingTarget = null;
+
+        function saveCurrentPosition() {
+            localStorage.setItem('salon_1_pos', JSON.stringify({ year: currentYear, month: currentMonth }));
+        }
 
         function createCard(y, m) {
             const card = document.createElement('div');
@@ -281,6 +294,9 @@
             currentMonth += dir;
             if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            
+            saveCurrentPosition(); // 記憶當前翻到的月份
+
             const newCard = createCard(currentYear, currentMonth);
             newCard.className = 'month-card ' + (dir > 0 ? 'page-in-right' : 'page-in-left');
             container.appendChild(newCard);
@@ -400,9 +416,10 @@
         }
 
         window.doExport = function() {
+            // 使用安全渲染設定避免手機截圖中斷
             html2canvas(activeCard, { 
-                scale: 3, 
-                backgroundColor: null, 
+                scale: 2, 
+                backgroundColor: '#B8C6DB', 
                 useCORS: true,
                 allowTaint: true,
                 logging: false,
@@ -412,7 +429,6 @@
                 }
             }).then(c => {
                 let dataUrl = c.toDataURL("image/png");
-                // 彈出預覽視窗讓手機用戶可以直覺長按儲存
                 document.getElementById('previewImg').src = dataUrl;
                 document.getElementById('previewOverlay').classList.add('active');
             }).catch(err => {
